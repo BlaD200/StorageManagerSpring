@@ -1,8 +1,13 @@
 package org.vsynytsyn.storagemanager.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.vsynytsyn.storagemanager.domain.UserEntity;
+import org.vsynytsyn.storagemanager.dto.Views;
 import org.vsynytsyn.storagemanager.service.AbstractService;
 
 import java.util.List;
@@ -19,36 +24,53 @@ public abstract class AbstractRestController<E, T, D> {
 
 
     @GetMapping
-    public ResponseEntity<List<E>> getAll(){
+    @JsonView(Views.IDName.class)
+    public ResponseEntity<List<E>> getAll() {
         return ResponseEntity.ok(abstractService.getAll());
     }
 
+
     @GetMapping("/{id}")
+    @JsonView(Views.FullProfile.class)
     public ResponseEntity<E> getOne(
-            @PathVariable("id") E obj
-    ){
+            @PathVariable("id") E obj,
+            @AuthenticationPrincipal UserEntity currentUser
+    ) {
+        System.err.println(currentUser);
         return ResponseEntity.of(Optional.ofNullable(obj));
     }
 
+
     @PutMapping
-    public ResponseEntity<E> create(
-            @RequestBody E obj
-    ){
-        E e = abstractService.create(obj);
-        if (e == null)
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        return new ResponseEntity<>(e, HttpStatus.CREATED);
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @JsonView(Views.ID.class)
+    public ResponseEntity<Object> create(
+            @RequestBody E obj,
+            @AuthenticationPrincipal UserEntity currentUser
+    ) {
+        try {
+            E e = abstractService.create(obj, currentUser);
+            if (e == null) {
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+            return new ResponseEntity<>(e, HttpStatus.CREATED);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        }
     }
 
 
     @PostMapping("/{id}")
-    public ResponseEntity<E> update(
+    @PreAuthorize("hasRole('ADMIN')")
+    @JsonView(Views.ID.class)
+    public ResponseEntity<Object> update(
             @PathVariable(name = "id") E obj,
-            @RequestBody D objDTO
-    ){
+            @RequestBody D objDTO,
+            @AuthenticationPrincipal UserEntity currentUser
+    ) {
         if (obj == null)
             return ResponseEntity.notFound().build();
-        E updated = abstractService.update(obj, objDTO);
+        E updated = abstractService.update(obj, objDTO, currentUser);
         if (updated == null)
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         return ResponseEntity.ok(updated);
@@ -57,9 +79,10 @@ public abstract class AbstractRestController<E, T, D> {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<E> delete(
-            @PathVariable("id") E obj
-    ){
-        if (abstractService.delete(obj))
+            @PathVariable("id") E obj,
+            @AuthenticationPrincipal UserEntity currentUser
+    ) {
+        if (abstractService.delete(obj, currentUser))
             return ResponseEntity.noContent().build();
         return ResponseEntity.notFound().build();
     }

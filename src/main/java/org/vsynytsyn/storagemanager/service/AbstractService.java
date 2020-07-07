@@ -3,6 +3,7 @@ package org.vsynytsyn.storagemanager.service;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.TransactionSystemException;
+import org.vsynytsyn.storagemanager.domain.UserEntity;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ import java.util.List;
 public abstract class AbstractService<E, T, D> {
 
     private final JpaRepository<E, T> repository;
-    private final ModelMapper mapper;
+    protected final ModelMapper mapper;
 
 
     protected AbstractService(JpaRepository<E, T> repository, ModelMapper mapper) {
@@ -33,7 +34,7 @@ public abstract class AbstractService<E, T, D> {
     }
 
 
-    public E create(E obj) {
+    public E create(E obj, UserEntity currentUser) {
         try {
             return repository.save(obj);
         } catch (TransactionSystemException e){
@@ -43,13 +44,13 @@ public abstract class AbstractService<E, T, D> {
     }
 
 
-    public E update(E obj, D objDTO) {
+    public E update(E obj, D objDTO, UserEntity currentUser) {
         mapper.map(objDTO, obj);
         return repository.save(obj);
     }
 
 
-    public boolean delete(E obj) {
+    public boolean delete(E obj, UserEntity currentUser) {
         if (obj == null)
             return false;
         try {

@@ -26,7 +26,7 @@ public class EntityIdResolver implements ObjectIdResolver {
 
     @Override
     public Object resolveId(ObjectIdGenerator.IdKey idKey) {
-        return entityManager.find(idKey.scope, idKey.key.toString());
+        return entityManager.find(idKey.scope, Long.valueOf(idKey.key.toString()));
     }
 
 
