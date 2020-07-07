@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.vsynytsyn.storagemanager.controller.response.ErrorResponse;
 import org.vsynytsyn.storagemanager.domain.UserEntity;
 import org.vsynytsyn.storagemanager.dto.Views;
 import org.vsynytsyn.storagemanager.service.AbstractService;
@@ -51,8 +52,8 @@ public abstract class AbstractRestController<E, T, D> {
                 return new ResponseEntity<>(HttpStatus.CONFLICT);
             }
             return new ResponseEntity<>(e, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        } catch (RuntimeException exception) {
+            return new ErrorResponse(exception.getMessage(), HttpStatus.CONFLICT).getResponseEntity();
         }
     }
 

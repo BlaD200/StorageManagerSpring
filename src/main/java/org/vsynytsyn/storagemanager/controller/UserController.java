@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.vsynytsyn.storagemanager.controller.response.ErrorResponse;
 import org.vsynytsyn.storagemanager.domain.UserEntity;
 import org.vsynytsyn.storagemanager.dto.UserAuthoritiesDTO;
 import org.vsynytsyn.storagemanager.dto.UserDTO;
@@ -68,14 +69,10 @@ public class UserController extends AbstractRestController<UserEntity, Long, Use
     ) {
         if (userEntity == null)
             return ResponseEntity.notFound().build();
-        try {
-            UserEntity updated = userService.update(userEntity, userDTO, currentUser);
-            if (updated == null)
-                return new ResponseEntity<>(HttpStatus.CONFLICT);
-            return ResponseEntity.ok(updated);
-        } catch (UserAuthoritiesEditingException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
-        }
+        UserEntity updated = userService.update(userEntity, userDTO, currentUser);
+        if (updated == null)
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        return ResponseEntity.ok(updated);
     }
 
 
@@ -115,11 +112,9 @@ public class UserController extends AbstractRestController<UserEntity, Long, Use
             try {
                 userService.updateAuthorities(userEntity, authoritiesDTO, currentUser);
             } catch (UserAuthoritiesEditingException e) {
-                return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+                return new ErrorResponse(e.getMessage(), HttpStatus.CONFLICT).getResponseEntity();
             }
         }
         return ResponseEntity.ok(UserAuthoritiesDTO.of(userEntity.getUserAuthorities()));
     }
-
-    // TODO send responses as JSON
 }
