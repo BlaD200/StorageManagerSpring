@@ -3,7 +3,6 @@ package org.vsynytsyn.storagemanager.controller;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.vsynytsyn.storagemanager.domain.UserEntity;
@@ -36,13 +35,11 @@ public abstract class AbstractRestController<E, T, D> {
             @PathVariable("id") E obj,
             @AuthenticationPrincipal UserEntity currentUser
     ) {
-        System.err.println(currentUser);
         return ResponseEntity.of(Optional.ofNullable(obj));
     }
 
 
     @PutMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
     @JsonView(Views.ID.class)
     public ResponseEntity<Object> create(
             @RequestBody E obj,
@@ -61,7 +58,6 @@ public abstract class AbstractRestController<E, T, D> {
 
 
     @PostMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     @JsonView(Views.ID.class)
     public ResponseEntity<Object> update(
             @PathVariable(name = "id") E obj,

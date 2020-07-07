@@ -1,14 +1,14 @@
 package org.vsynytsyn.storagemanager.dto;
 
-import lombok.Data;
+import lombok.*;
 import org.vsynytsyn.storagemanager.domain.Authority;
 
 import java.util.Set;
 
-@Data
-public class UserDTO {
-    private String username;
-    private String password;
-
+@RequiredArgsConstructor(staticName = "of")
+@NoArgsConstructor
+@Getter @Setter
+public class UserAuthoritiesDTO {
+    @NonNull
     private Set<Authority> authorities;
 }

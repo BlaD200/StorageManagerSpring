@@ -2,8 +2,9 @@ package org.vsynytsyn.storagemanager.domain;
 
 import org.springframework.security.core.GrantedAuthority;
 
-public enum Role implements GrantedAuthority {
-    ADMIN, USER;
+
+public enum Authority implements GrantedAuthority {
+    GET_USER, CREATE_USER, UPDATE_USER, DELETE_USER, GET_AUTHORITIES, SET_USER_AUTHORITIES;
 
 
     @Override

@@ -6,6 +6,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import javax.servlet.FilterChain;
@@ -38,10 +39,14 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
             return;
         }
 
-        UsernamePasswordAuthenticationToken token = authenticationToken(header);
-        SecurityContextHolder.getContext().setAuthentication(token);
-
-        chain.doFilter(request, response);
+        try {
+            UsernamePasswordAuthenticationToken token = authenticationToken(header);
+            SecurityContextHolder.getContext().setAuthentication(token);
+            chain.doFilter(request, response);
+        } catch (UsernameNotFoundException e){
+            SecurityContextHolder.clearContext();
+            chain.doFilter(request, response);
+        }
     }
 
 

@@ -5,10 +5,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
-import org.vsynytsyn.storagemanager.domain.Role;
+import org.vsynytsyn.storagemanager.domain.Authority;
 import org.vsynytsyn.storagemanager.domain.UserEntity;
+import org.vsynytsyn.storagemanager.dto.UserAuthoritiesDTO;
 import org.vsynytsyn.storagemanager.dto.UserDTO;
-import org.vsynytsyn.storagemanager.exceptions.UserRoleEditingException;
+import org.vsynytsyn.storagemanager.exceptions.UserAuthoritiesEditingException;
 import org.vsynytsyn.storagemanager.repository.UserRepository;
 
 import javax.annotation.PostConstruct;
@@ -36,12 +37,12 @@ public class UserService extends AbstractService<UserEntity, Long, UserDTO> {
             UserEntity userEntity = new UserEntity();
             userEntity.setUsername("admin");
             userEntity.setPassword(encoder.encode("admin"));
-            userEntity.setRoles(Arrays.stream(Role.values()).collect(Collectors.toSet()));
+            userEntity.setAuthorities(Arrays.stream(Authority.values()).collect(Collectors.toSet()));
             userRepository.save(userEntity);
         } else {
             UserEntity admin = userRepository.findByUsername("admin");
-            admin.getRoles().clear();
-            admin.setRoles(Arrays.stream(Role.values()).collect(Collectors.toSet()));
+            admin.getAuthorities().clear();
+            admin.setAuthorities(Arrays.stream(Authority.values()).collect(Collectors.toSet()));
             userRepository.save(admin);
         }
     }
@@ -51,7 +52,7 @@ public class UserService extends AbstractService<UserEntity, Long, UserDTO> {
     public UserEntity create(UserEntity userEntity, UserEntity currentUser) throws RuntimeException {
         try {
             userEntity.setPassword(encoder.encode(userEntity.getPassword()));
-            userEntity.setRoles(Collections.singleton(Role.USER));
+            userEntity.setAuthorities(Collections.singleton(Authority.GET_USER));
             return userRepository.save(userEntity);
         } catch (TransactionSystemException e) {
             throw new RuntimeException(e.getMessage());
@@ -67,24 +68,34 @@ public class UserService extends AbstractService<UserEntity, Long, UserDTO> {
 
         if (userDTO.getPassword() != null)
             userEntity.setPassword(encoder.encode(userDTO.getPassword()));
-        if (userDTO.getRoles() != null && !userDTO.getRoles().isEmpty()) {
-            if (!currentUser.getRoles().contains(Role.ADMIN))
-                throw new UserRoleEditingException(
-                        "User '" + currentUser.getUsername() + "' has no rights " +
-                                "to modifying roles for other users.");
-            if (currentUser.getRoles().contains(Role.ADMIN) &&
-                    !userDTO.getRoles().contains(Role.ADMIN) && userEntity.getId().equals(currentUser.getId()))
-                throw new UserRoleEditingException(
-                        "User '" + currentUser.getUsername() + "' with the role ADMIN" +
-                                " cannot remove ADMIN role from himself. "
-                );
-            userEntity.getRoles().clear();
-
-            for (Role role : userDTO.getRoles()) {
-                userEntity.getRoles().add(role);
-            }
-        }
 
         return userRepository.save(userEntity);
+    }
+
+    public void updateAuthorities(
+            UserEntity userEntity,
+            UserAuthoritiesDTO authorities,
+            UserEntity currentUser
+    ) throws UserAuthoritiesEditingException {
+        if (authorities != null && authorities.getAuthorities() != null) {
+            if (!currentUser.getAuthorities().contains(Authority.SET_USER_AUTHORITIES))
+                throw new UserAuthoritiesEditingException(
+                        "User '" + currentUser.getUsername() + "' has no rights " +
+                                "to modifying authorities for other users.");
+            if (currentUser.getAuthorities().contains(Authority.SET_USER_AUTHORITIES) &&
+                    !authorities.getAuthorities().contains(Authority.SET_USER_AUTHORITIES) &&
+                    userEntity.getId().equals(currentUser.getId()))
+                throw new UserAuthoritiesEditingException(
+                        "User '" + currentUser.getUsername() + "' with the authority SET_USER_AUTHORITIES" +
+                                " cannot remove SET_USER_AUTHORITIES right from himself. "
+                );
+            userEntity.getAuthorities().clear();
+
+            for (Authority authority : authorities.getAuthorities()) {
+                userEntity.getUserAuthorities().add(authority);
+            }
+
+            userRepository.save(userEntity);
+        } else throw new UserAuthoritiesEditingException("Authorities cannot be null");
     }
 }

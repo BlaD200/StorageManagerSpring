@@ -39,16 +39,21 @@ public class UserEntity implements UserDetails {
 //    @JsonView(Views.FullProfile.class)
     private String password;
 
-    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = Authority.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(value = EnumType.STRING)
     @JsonView(Views.FullProfile.class)
-    private Set<Role> roles;
+    private Set<Authority> userAuthorities;
+
+
+    public void setAuthorities(Set<Authority> authorities){
+        setUserAuthorities(authorities);
+    }
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return getRoles();
+        return getUserAuthorities();
     }
 
 
