@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 import org.vsynytsyn.storagemanager.domain.Authority;
 import org.vsynytsyn.storagemanager.domain.UserEntity;
-import org.vsynytsyn.storagemanager.dto.UserAuthoritiesDTO;
+import org.vsynytsyn.storagemanager.dto.AuthoritiesDTO;
 import org.vsynytsyn.storagemanager.dto.UserDTO;
 import org.vsynytsyn.storagemanager.exceptions.UserAuthoritiesEditingException;
 import org.vsynytsyn.storagemanager.repository.UserRepository;
@@ -74,7 +74,7 @@ public class UserService extends AbstractService<UserEntity, Long, UserDTO> {
 
     public void updateAuthorities(
             UserEntity userEntity,
-            UserAuthoritiesDTO authorities,
+            AuthoritiesDTO authorities,
             UserEntity currentUser
     ) throws UserAuthoritiesEditingException {
         if (authorities != null && authorities.getAuthorities() != null) {
