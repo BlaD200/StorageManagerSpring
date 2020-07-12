@@ -1,4 +1,4 @@
-package org.vsynytsyn.storagemanager.security;
+package org.vsynytsyn.storagemanager.security.JWT;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.vsynytsyn.storagemanager.security.UserDetailsServiceImpl;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -15,7 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static org.vsynytsyn.storagemanager.security.JWTSecurityConstants.JWT_TOKEN_PREFIX;
+import static org.vsynytsyn.storagemanager.security.JWT.JWTSecurityConstants.JWT_TOKEN_PREFIX;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
@@ -56,8 +57,6 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
                 .verify(header.replace(JWT_TOKEN_PREFIX, ""))
                 .getSubject();
         if (username != null) {
-            // Should be user id to automatically map as @AuthenticationPrincipal
-//            Long id = userDetailsService.getUserID(username);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             return new UsernamePasswordAuthenticationToken(
                     userDetails,

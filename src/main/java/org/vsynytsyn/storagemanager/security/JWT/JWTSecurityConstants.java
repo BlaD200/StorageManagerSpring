@@ -1,4 +1,4 @@
-package org.vsynytsyn.storagemanager.security;
+package org.vsynytsyn.storagemanager.security.JWT;
 
 import java.time.Duration;
 

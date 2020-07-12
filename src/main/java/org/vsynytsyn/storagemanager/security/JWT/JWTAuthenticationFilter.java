@@ -1,8 +1,10 @@
-package org.vsynytsyn.storagemanager.security;
+package org.vsynytsyn.storagemanager.security.JWT;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -10,6 +12,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.vsynytsyn.storagemanager.domain.UserEntity;
 import org.vsynytsyn.storagemanager.dto.UserCredentials;
+import org.vsynytsyn.storagemanager.dto.Views;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
@@ -45,7 +48,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             try {
                 response.setStatus(403);
                 response.addHeader("Content-Type", "text/plain");
-                response.getWriter().println(e.getMessage().split("\\(")[0]);
+                response.getWriter().println(e.getMessage()/*.split("\\(")[0]*/);
                 response.getWriter().flush();
                 response.getWriter().close();
             } catch (IOException ioException) {
@@ -67,9 +70,17 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .withExpiresAt(new Date(System.currentTimeMillis() * 1000 + JWTSecurityConstants.EXPIRATION_TIME))
                 .sign(Algorithm.HMAC256(JWTSecurityConstants.SECRET));
 
-        response.addHeader("Content-Type", "text/plain");
-        response.getWriter().println(token);
+        response.addHeader("Content-Type", "application/json");
+        response.addHeader(JWTSecurityConstants.HEADER_NAME, token);
+        response.getWriter().println(getUserInJson(user, token));
         response.getWriter().flush();
         response.getWriter().close();
+    }
+
+    @SneakyThrows
+    private String getUserInJson(UserEntity userEntity, String token){
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+        return mapper.writerWithView(Views.FullProfile.class).writeValueAsString(userEntity);
     }
 }

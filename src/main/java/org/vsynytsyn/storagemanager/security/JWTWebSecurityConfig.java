@@ -10,6 +10,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.vsynytsyn.storagemanager.security.JWT.JWTAuthenticationFilter;
+import org.vsynytsyn.storagemanager.security.JWT.JWTAuthorizationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -37,12 +41,14 @@ public class JWTWebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                     .authorizeRequests()
-                    .antMatchers("/login").permitAll()
+                    .antMatchers("/api/login").permitAll()
                     .anyRequest().authenticated()
+                .and()
+                    .cors()
                 .and()
                     .addFilter(new JWTAuthorizationFilter(authenticationManager(), userDetailsService))
                     .addFilter(new JWTAuthenticationFilter(authenticationManager()))
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 
 
@@ -50,4 +56,16 @@ public class JWTWebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder);
     }
+
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**").allowedMethods("*").allowedMethods("*").exposedHeaders("Authorization");
+            }
+        };
+    }
+
 }
