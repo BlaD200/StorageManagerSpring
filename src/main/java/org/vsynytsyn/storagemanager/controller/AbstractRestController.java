@@ -75,7 +75,7 @@ public abstract class AbstractRestController<E, T, D> {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<E> delete(
+    public ResponseEntity<Object> delete(
             @PathVariable("id") E obj,
             @AuthenticationPrincipal UserEntity currentUser
     ) {

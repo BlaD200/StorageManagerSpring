@@ -72,13 +72,13 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         response.addHeader("Content-Type", "application/json");
         response.addHeader(JWTSecurityConstants.HEADER_NAME, token);
-        response.getWriter().println(getUserInJson(user, token));
+        response.getWriter().println(getUserInJson(user));
         response.getWriter().flush();
         response.getWriter().close();
     }
 
     @SneakyThrows
-    private String getUserInJson(UserEntity userEntity, String token){
+    private String getUserInJson(UserEntity userEntity){
         ObjectMapper mapper = new ObjectMapper();
         mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
         return mapper.writerWithView(Views.FullProfile.class).writeValueAsString(userEntity);

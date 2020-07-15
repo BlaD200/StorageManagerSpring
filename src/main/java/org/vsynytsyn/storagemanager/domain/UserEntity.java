@@ -13,7 +13,7 @@ import org.vsynytsyn.storagemanager.util.EntityIdResolver;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Data
@@ -26,7 +26,7 @@ import java.util.Set;
 )
 public class UserEntity implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonView(Views.ID.class)
     private Long id;
 
@@ -39,14 +39,20 @@ public class UserEntity implements UserDetails {
 //    @JsonView(Views.FullProfile.class)
     private String password;
 
-    @ElementCollection(targetClass = Authority.class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
-    @Enumerated(value = EnumType.STRING)
+//    @ElementCollection(targetClass = Authority.class, fetch = FetchType.EAGER)
+//    @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
+//    @Enumerated(value = EnumType.STRING)
     @JsonView(Views.FullProfile.class)
-    private Set<Authority> userAuthorities;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_authority",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "authority_id")
+    )
+    private List<Authority> userAuthorities;
 
 
-    public void setAuthorities(Set<Authority> authorities){
+    public void setAuthorities(List<Authority> authorities){
         setUserAuthorities(authorities);
     }
 

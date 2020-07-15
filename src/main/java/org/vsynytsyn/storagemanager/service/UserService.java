@@ -10,41 +10,23 @@ import org.vsynytsyn.storagemanager.domain.UserEntity;
 import org.vsynytsyn.storagemanager.dto.AuthoritiesDTO;
 import org.vsynytsyn.storagemanager.dto.UserDTO;
 import org.vsynytsyn.storagemanager.exceptions.UserAuthoritiesEditingException;
+import org.vsynytsyn.storagemanager.exceptions.UserDeletionException;
+import org.vsynytsyn.storagemanager.repository.AuthorityRepository;
 import org.vsynytsyn.storagemanager.repository.UserRepository;
-
-import javax.annotation.PostConstruct;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService extends AbstractService<UserEntity, Long, UserDTO> {
 
     private final UserRepository userRepository;
+    private final AuthorityRepository authorityRepository;
     private final BCryptPasswordEncoder encoder;
 
 
-    protected UserService(UserRepository repository, ModelMapper mapper, BCryptPasswordEncoder encoder) {
+    protected UserService(UserRepository repository, ModelMapper mapper, AuthorityRepository authorityRepository, BCryptPasswordEncoder encoder) {
         super(repository, mapper);
         this.userRepository = repository;
+        this.authorityRepository = authorityRepository;
         this.encoder = encoder;
-    }
-
-
-    @PostConstruct
-    private void init() {
-        if (userRepository.findByUsername("admin") == null) {
-            UserEntity userEntity = new UserEntity();
-            userEntity.setUsername("admin");
-            userEntity.setPassword(encoder.encode("admin"));
-            userEntity.setAuthorities(Arrays.stream(Authority.values()).collect(Collectors.toSet()));
-            userRepository.save(userEntity);
-        } else {
-            UserEntity admin = userRepository.findByUsername("admin");
-            admin.getAuthorities().clear();
-            admin.setAuthorities(Arrays.stream(Authority.values()).collect(Collectors.toSet()));
-            userRepository.save(admin);
-        }
     }
 
 
@@ -52,7 +34,6 @@ public class UserService extends AbstractService<UserEntity, Long, UserDTO> {
     public UserEntity create(UserEntity userEntity, UserEntity currentUser) throws RuntimeException {
         try {
             userEntity.setPassword(encoder.encode(userEntity.getPassword()));
-            userEntity.setAuthorities(Collections.singleton(Authority.GET_USER));
             return userRepository.save(userEntity);
         } catch (TransactionSystemException e) {
             throw new RuntimeException(e.getMessage());
@@ -72,19 +53,42 @@ public class UserService extends AbstractService<UserEntity, Long, UserDTO> {
         return userRepository.save(userEntity);
     }
 
+
+    @Override
+    public boolean delete(UserEntity userEntity, UserEntity currentUser) {
+        if (userEntity.getId().equals(currentUser.getId()))
+            throw new UserDeletionException(currentUser.getUsername() + " cannot delete him/herself.");
+        return super.delete(userEntity, currentUser);
+    }
+
+
     public void updateAuthorities(
             UserEntity userEntity,
             AuthoritiesDTO authorities,
             UserEntity currentUser
     ) throws UserAuthoritiesEditingException {
         if (authorities != null && authorities.getAuthorities() != null) {
-            if (!currentUser.getAuthorities().contains(Authority.SET_USER_AUTHORITIES))
+            if (!currentUser
+                    .getAuthorities()
+                    .contains(authorityRepository.findByName("GET_USER").orElse(null))
+            )
                 throw new UserAuthoritiesEditingException(
                         "User '" + currentUser.getUsername() + "' has no rights " +
                                 "to modifying authorities for other users.");
-            if (currentUser.getAuthorities().contains(Authority.SET_USER_AUTHORITIES) &&
-                    !authorities.getAuthorities().contains(Authority.SET_USER_AUTHORITIES) &&
-                    userEntity.getId().equals(currentUser.getId()))
+            if (currentUser
+                    .getAuthorities()
+                    .contains(
+                            authorityRepository.findByName("SET_USER_AUTHORITIES").orElse(null)
+                    )
+                && !authorities
+                    .getAuthorities()
+                    .contains(
+                            authorityRepository.findByName("SET_USER_AUTHORITIES").orElse(null)
+                    )
+                && userEntity
+                    .getId()
+                    .equals(currentUser.getId())
+            )
                 throw new UserAuthoritiesEditingException(
                         "User '" + currentUser.getUsername() + "' with the authority SET_USER_AUTHORITIES" +
                                 " cannot remove SET_USER_AUTHORITIES right from himself. "

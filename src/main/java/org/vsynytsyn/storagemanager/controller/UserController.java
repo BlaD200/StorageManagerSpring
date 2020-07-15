@@ -12,6 +12,7 @@ import org.vsynytsyn.storagemanager.dto.AuthoritiesDTO;
 import org.vsynytsyn.storagemanager.dto.UserDTO;
 import org.vsynytsyn.storagemanager.dto.Views;
 import org.vsynytsyn.storagemanager.exceptions.UserAuthoritiesEditingException;
+import org.vsynytsyn.storagemanager.exceptions.UserDeletionException;
 import org.vsynytsyn.storagemanager.service.UserService;
 
 import java.util.List;
@@ -76,11 +77,15 @@ public class UserController extends AbstractRestController<UserEntity, Long, Use
 
     @Override
     @PreAuthorize("hasAuthority('DELETE_USER')")
-    public ResponseEntity<UserEntity> delete(
+    public ResponseEntity<Object> delete(
             @PathVariable("id") UserEntity userEntity,
             @AuthenticationPrincipal UserEntity currentUser
     ) {
-        return super.delete(userEntity, currentUser);
+        try {
+            return super.delete(userEntity, currentUser);
+        } catch (UserDeletionException e) {
+            return new ErrorResponse(e.getMessage(), HttpStatus.CONFLICT).getResponseEntity();
+        }
     }
 
 
