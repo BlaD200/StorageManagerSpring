@@ -1,7 +1,7 @@
 package org.vsynytsyn.storagemanager.dto;
 
 import lombok.Data;
-import org.vsynytsyn.storagemanager.domain.Authority;
+import org.vsynytsyn.storagemanager.domain.AuthorityEntity;
 
 import java.util.Set;
 
@@ -10,5 +10,5 @@ public class UserDTO {
     private String username;
     private String password;
 
-    private Set<Authority> authorities;
+    private Set<AuthorityEntity> authorities;
 }

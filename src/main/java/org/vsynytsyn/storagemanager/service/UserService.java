@@ -5,7 +5,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
-import org.vsynytsyn.storagemanager.domain.Authority;
+import org.vsynytsyn.storagemanager.domain.AuthorityEntity;
+import org.vsynytsyn.storagemanager.dto.AuthorityEnum;
 import org.vsynytsyn.storagemanager.domain.UserEntity;
 import org.vsynytsyn.storagemanager.dto.AuthoritiesDTO;
 import org.vsynytsyn.storagemanager.dto.UserDTO;
@@ -70,21 +71,17 @@ public class UserService extends AbstractService<UserEntity, Long, UserDTO> {
         if (authorities != null && authorities.getAuthorities() != null) {
             if (!currentUser
                     .getAuthorities()
-                    .contains(authorityRepository.findByName("GET_USER").orElse(null))
+                    .contains(AuthorityEnum.GET_USER.getAuthorityEntity())
             )
                 throw new UserAuthoritiesEditingException(
                         "User '" + currentUser.getUsername() + "' has no rights " +
                                 "to modifying authorities for other users.");
             if (currentUser
                     .getAuthorities()
-                    .contains(
-                            authorityRepository.findByName("SET_USER_AUTHORITIES").orElse(null)
-                    )
+                    .contains(AuthorityEnum.SET_USER_AUTHORITIES.getAuthorityEntity())
                 && !authorities
                     .getAuthorities()
-                    .contains(
-                            authorityRepository.findByName("SET_USER_AUTHORITIES").orElse(null)
-                    )
+                    .contains(AuthorityEnum.SET_USER_AUTHORITIES.getAuthorityEntity())
                 && userEntity
                     .getId()
                     .equals(currentUser.getId())
@@ -95,8 +92,8 @@ public class UserService extends AbstractService<UserEntity, Long, UserDTO> {
                 );
             userEntity.getAuthorities().clear();
 
-            for (Authority authority : authorities.getAuthorities()) {
-                userEntity.getUserAuthorities().add(authority);
+            for (AuthorityEntity authorityEntity : authorities.getAuthorities()) {
+                userEntity.getUserAuthorities().add(authorityEntity);
             }
 
             userRepository.save(userEntity);

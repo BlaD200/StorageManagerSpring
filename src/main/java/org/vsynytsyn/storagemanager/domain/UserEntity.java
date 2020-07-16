@@ -51,10 +51,10 @@ public class UserEntity implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "authority_id")
     )
-    private List<Authority> userAuthorities;
+    private List<AuthorityEntity> userAuthorities;
 
 
-    public void setAuthorities(List<Authority> authorities){
+    public void setAuthorities(List<AuthorityEntity> authorities){
         setUserAuthorities(authorities);
     }
 

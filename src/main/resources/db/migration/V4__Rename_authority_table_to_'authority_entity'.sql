@@ -1,0 +1,1 @@
+alter table authority rename to authority_entity;

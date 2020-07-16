@@ -1,7 +1,7 @@
 package org.vsynytsyn.storagemanager.dto;
 
 import lombok.*;
-import org.vsynytsyn.storagemanager.domain.Authority;
+import org.vsynytsyn.storagemanager.domain.AuthorityEntity;
 
 import java.util.List;
 
@@ -10,6 +10,6 @@ import java.util.List;
 @Getter @Setter
 public class AuthoritiesDTO {
     @NonNull
-    private List<Authority> authorities;
+    private List<AuthorityEntity> authorities;
     // TODO store users token and mark then invalid if user authorities was changed
 }
