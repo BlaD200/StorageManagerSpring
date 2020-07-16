@@ -1,6 +1,8 @@
 package org.vsynytsyn.storagemanager.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,9 +15,8 @@ import org.vsynytsyn.storagemanager.dto.UserDTO;
 import org.vsynytsyn.storagemanager.dto.Views;
 import org.vsynytsyn.storagemanager.exceptions.UserAuthoritiesEditingException;
 import org.vsynytsyn.storagemanager.exceptions.UserDeletionException;
+import org.vsynytsyn.storagemanager.repository.UserRepository;
 import org.vsynytsyn.storagemanager.service.UserService;
-
-import java.util.List;
 
 
 @RestController
@@ -24,18 +25,22 @@ import java.util.List;
 public class UserController extends AbstractRestController<UserEntity, Long, UserDTO> {
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserRepository userRepository) {
         super(userService);
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
 
     @Override
     @PreAuthorize("hasAuthority('GET_USER')")
-    public ResponseEntity<List<UserEntity>> getAll() {
-        return super.getAll();
+    public ResponseEntity<Page<UserEntity>> getAll(
+            Pageable pageable
+    ) {
+        return super.getAll(pageable);
     }
 
 

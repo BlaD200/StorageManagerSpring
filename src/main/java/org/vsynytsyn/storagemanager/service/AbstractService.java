@@ -1,11 +1,11 @@
 package org.vsynytsyn.storagemanager.service;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.TransactionSystemException;
 import org.vsynytsyn.storagemanager.domain.UserEntity;
-
-import java.util.List;
 
 /**
  * @param <E>
@@ -24,8 +24,8 @@ public abstract class AbstractService<E, T, D> {
     }
 
 
-    public List<E> getAll() {
-        return repository.findAll();
+    public Page<E> getAll(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
 

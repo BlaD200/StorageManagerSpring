@@ -1,6 +1,8 @@
 package org.vsynytsyn.storagemanager.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -10,7 +12,6 @@ import org.vsynytsyn.storagemanager.domain.UserEntity;
 import org.vsynytsyn.storagemanager.dto.Views;
 import org.vsynytsyn.storagemanager.service.AbstractService;
 
-import java.util.List;
 import java.util.Optional;
 
 public abstract class AbstractRestController<E, T, D> {
@@ -25,8 +26,8 @@ public abstract class AbstractRestController<E, T, D> {
 
     @GetMapping
     @JsonView(Views.IDName.class)
-    public ResponseEntity<List<E>> getAll() {
-        return ResponseEntity.ok(abstractService.getAll());
+    public ResponseEntity<Page<E>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(abstractService.getAll(pageable));
     }
 
 

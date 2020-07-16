@@ -1,6 +1,7 @@
 package org.vsynytsyn.storagemanager.domain;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Data;
@@ -34,9 +35,10 @@ public class UserEntity implements UserDetails {
     @Column(unique = true, nullable = false)
     @JsonView(Views.IDName.class)
     private String username;
+
     @NotNull
     @Column(nullable = false)
-//    @JsonView(Views.FullProfile.class)
+    @JsonIgnore
     private String password;
 
 //    @ElementCollection(targetClass = Authority.class, fetch = FetchType.EAGER)
