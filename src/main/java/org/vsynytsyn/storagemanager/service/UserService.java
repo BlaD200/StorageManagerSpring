@@ -88,7 +88,7 @@ public class UserService {
         if (authorities != null && authorities.getAuthorities() != null) {
             if (!currentUser
                     .getAuthorities()
-                    .contains(AuthorityEnum.GET_USER.getAuthorityEntity())
+                    .contains(AuthorityEnum.SET_USER_AUTHORITIES.getAuthorityEntity())
             )
                 throw new UserAuthoritiesEditingException(
                         "User '" + currentUser.getUsername() + "' has no rights " +
