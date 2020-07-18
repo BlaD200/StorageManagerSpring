@@ -15,57 +15,67 @@ import org.vsynytsyn.storagemanager.dto.UserDTO;
 import org.vsynytsyn.storagemanager.dto.Views;
 import org.vsynytsyn.storagemanager.exceptions.UserAuthoritiesEditingException;
 import org.vsynytsyn.storagemanager.exceptions.UserDeletionException;
-import org.vsynytsyn.storagemanager.repository.UserRepository;
 import org.vsynytsyn.storagemanager.service.UserService;
+
+import java.util.Optional;
 
 
 @RestController
 
 @RequestMapping("/api/users")
-public class UserController extends AbstractRestController<UserEntity, Long, UserDTO> {
+public class UserController {
 
     private final UserService userService;
-    private final UserRepository userRepository;
 
 
-    public UserController(UserService userService, UserRepository userRepository) {
-        super(userService);
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.userRepository = userRepository;
     }
 
 
-    @Override
+    @GetMapping
     @PreAuthorize("hasAuthority('GET_USER')")
+    @JsonView(Views.IDName.class)
     public ResponseEntity<Page<UserEntity>> getAll(
             Pageable pageable
     ) {
-        return super.getAll(pageable);
+        return ResponseEntity.ok(userService.getAll(pageable));
     }
 
 
-    @Override
+    @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('GET_USER')")
+    @JsonView(Views.FullProfile.class)
     public ResponseEntity<UserEntity> getOne(
             @PathVariable("id") UserEntity userEntity,
             @AuthenticationPrincipal UserEntity currentUser
     ) {
-        return super.getOne(userEntity, currentUser);
+        return ResponseEntity.of(Optional.ofNullable(userEntity));
     }
 
 
-    @Override
+    @PutMapping
     @PreAuthorize("hasAuthority('CREATE_USER')")
+    @JsonView(Views.ID.class)
     public ResponseEntity<Object> create(
             @RequestBody UserEntity userEntity,
             @AuthenticationPrincipal UserEntity currentUser
     ) {
-        return super.create(userEntity, currentUser);
+        try {
+            UserEntity e = userService.create(userEntity, currentUser);
+            if (e == null) {
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+            return new ResponseEntity<>(e, HttpStatus.CREATED);
+        } catch (RuntimeException exception) {
+            return new ErrorResponse(exception.getMessage(), HttpStatus.CONFLICT).getResponseEntity();
+        }
     }
 
 
-    @JsonView(Views.ID.class)
+    @PostMapping("/{id}")
     @PreAuthorize("hasAuthority('UPDATE_USER')")
+    @JsonView(Views.ID.class)
     public ResponseEntity<Object> update(
             @PathVariable(name = "id") UserEntity userEntity,
             @RequestBody UserDTO userDTO,
@@ -80,14 +90,16 @@ public class UserController extends AbstractRestController<UserEntity, Long, Use
     }
 
 
-    @Override
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('DELETE_USER')")
     public ResponseEntity<Object> delete(
             @PathVariable("id") UserEntity userEntity,
             @AuthenticationPrincipal UserEntity currentUser
     ) {
         try {
-            return super.delete(userEntity, currentUser);
+            if (userService.delete(userEntity, currentUser))
+                return ResponseEntity.noContent().build();
+            return ResponseEntity.notFound().build();
         } catch (UserDeletionException e) {
             return new ErrorResponse(e.getMessage(), HttpStatus.CONFLICT).getResponseEntity();
         }

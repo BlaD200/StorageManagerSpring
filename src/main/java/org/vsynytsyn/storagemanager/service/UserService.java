@@ -2,36 +2,45 @@ package org.vsynytsyn.storagemanager.service;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 import org.vsynytsyn.storagemanager.domain.AuthorityEntity;
-import org.vsynytsyn.storagemanager.dto.AuthorityEnum;
 import org.vsynytsyn.storagemanager.domain.UserEntity;
 import org.vsynytsyn.storagemanager.dto.AuthoritiesDTO;
+import org.vsynytsyn.storagemanager.dto.AuthorityEnum;
 import org.vsynytsyn.storagemanager.dto.UserDTO;
 import org.vsynytsyn.storagemanager.exceptions.UserAuthoritiesEditingException;
 import org.vsynytsyn.storagemanager.exceptions.UserDeletionException;
-import org.vsynytsyn.storagemanager.repository.AuthorityRepository;
 import org.vsynytsyn.storagemanager.repository.UserRepository;
 
 @Service
-public class UserService extends AbstractService<UserEntity, Long, UserDTO> {
+public class UserService {
 
     private final UserRepository userRepository;
-    private final AuthorityRepository authorityRepository;
+    private final ModelMapper mapper;
     private final BCryptPasswordEncoder encoder;
 
 
-    protected UserService(UserRepository repository, ModelMapper mapper, AuthorityRepository authorityRepository, BCryptPasswordEncoder encoder) {
-        super(repository, mapper);
+    protected UserService(UserRepository repository, ModelMapper mapper, BCryptPasswordEncoder encoder) {
         this.userRepository = repository;
-        this.authorityRepository = authorityRepository;
+        this.mapper = mapper;
         this.encoder = encoder;
     }
 
 
-    @Override
+    public Page<UserEntity> getAll(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+
+
+    public UserEntity getOne(Long id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
+
     public UserEntity create(UserEntity userEntity, UserEntity currentUser) throws RuntimeException {
         try {
             userEntity.setPassword(encoder.encode(userEntity.getPassword()));
@@ -44,7 +53,6 @@ public class UserService extends AbstractService<UserEntity, Long, UserDTO> {
     }
 
 
-    @Override
     public UserEntity update(UserEntity userEntity, UserDTO userDTO, UserEntity currentUser) {
         mapper.map(userDTO, userEntity);
 
@@ -55,11 +63,18 @@ public class UserService extends AbstractService<UserEntity, Long, UserDTO> {
     }
 
 
-    @Override
     public boolean delete(UserEntity userEntity, UserEntity currentUser) {
+        if (userEntity == null)
+            return false;
         if (userEntity.getId().equals(currentUser.getId()))
             throw new UserDeletionException(currentUser.getUsername() + " cannot delete him/herself.");
-        return super.delete(userEntity, currentUser);
+        try {
+            userRepository.delete(userEntity);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 
