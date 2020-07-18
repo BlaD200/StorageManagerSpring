@@ -1,7 +1,6 @@
 package org.vsynytsyn.storagemanager.domain;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Data;
@@ -38,19 +37,16 @@ public class UserEntity implements UserDetails {
 
     @NotNull
     @Column(nullable = false)
-    @JsonIgnore
     private String password;
 
-//    @ElementCollection(targetClass = Authority.class, fetch = FetchType.EAGER)
-//    @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
-//    @Enumerated(value = EnumType.STRING)
-    @JsonView(Views.FullProfile.class)
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_authority",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "authority_id")
     )
+    @JsonView(Views.FullProfile.class)
     private List<AuthorityEntity> userAuthorities;
 
 

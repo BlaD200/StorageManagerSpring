@@ -96,6 +96,7 @@ public class UserController extends AbstractRestController<UserEntity, Long, Use
 
     @GetMapping("/{id}/authorities")
     @PreAuthorize("hasAuthority('GET_AUTHORITIES')")
+    @JsonView(Views.IDName.class)
     public ResponseEntity<AuthoritiesDTO> getAuthorities(
             @PathVariable(name = "id") UserEntity userEntity
     ) {
@@ -108,6 +109,7 @@ public class UserController extends AbstractRestController<UserEntity, Long, Use
 
     @PostMapping("/{id}/authorities")
     @PreAuthorize("hasAuthority('SET_USER_AUTHORITIES')")
+    @JsonView(Views.IDName.class)
     public ResponseEntity<Object> updateAuthorities(
             @PathVariable(name = "id") UserEntity userEntity,
             @RequestBody AuthoritiesDTO authoritiesDTO,
