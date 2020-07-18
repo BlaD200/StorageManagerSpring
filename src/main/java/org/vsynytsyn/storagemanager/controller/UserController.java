@@ -21,7 +21,6 @@ import java.util.Optional;
 
 
 @RestController
-
 @RequestMapping("/api/users")
 public class UserController {
 
@@ -37,9 +36,10 @@ public class UserController {
     @PreAuthorize("hasAuthority('GET_USER')")
     @JsonView(Views.IDName.class)
     public ResponseEntity<Page<UserEntity>> getAll(
-            Pageable pageable
+            Pageable pageable,
+            @RequestParam(required = false) String username
     ) {
-        return ResponseEntity.ok(userService.getAll(pageable));
+        return ResponseEntity.ok(userService.getAll(pageable, username));
     }
 
 
@@ -71,7 +71,6 @@ public class UserController {
             return new ErrorResponse(exception.getMessage(), HttpStatus.CONFLICT).getResponseEntity();
         }
     }
-
 
     @PostMapping("/{id}")
     @PreAuthorize("hasAuthority('UPDATE_USER')")

@@ -31,7 +31,9 @@ public class UserService {
     }
 
 
-    public Page<UserEntity> getAll(Pageable pageable) {
+    public Page<UserEntity> getAll(Pageable pageable, String username) {
+        if (username != null)
+            return userRepository.findAllByUsernameContains(pageable, username);
         return userRepository.findAll(pageable);
     }
 
